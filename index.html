@@ -102,7 +102,6 @@ input[type=text],input[type=number],input[type=date],input[type=password],select
 /* Notícias */
 .out{white-space:pre-wrap;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:14px;font-size:.95rem}
 .out:empty{display:none}
-.sources{margin:10px 0 0;padding-left:18px;font-size:.85rem}
 
 details{margin-top:38px;border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface)}
 summary{cursor:pointer;font-weight:600}
@@ -141,14 +140,6 @@ footer{margin-top:36px;font-size:.82rem;color:var(--muted)}
     <p class="tip" id="tip"></p>
   </section>
 
-  <section aria-labelledby="t-news">
-    <h2 id="t-news">Notícias da semana</h2>
-    <p class="muted">Pesquisa as notícias mais recentes sobre os mercados, Bitcoin e Ethereum e diz se alguma coisa justifica mudar o plano deste mês.</p>
-    <button class="btn" id="btnNews">Analisar notícias</button>
-    <div class="out" id="news" aria-live="polite"></div>
-    <ol class="sources" id="sources"></ol>
-  </section>
-
   <section aria-labelledby="t-buy">
     <h2 id="t-buy">Registar compra</h2>
     <p class="muted">Copia da tua corretora o valor e as unidades que compraste. Fica guardado só neste dispositivo.</p>
@@ -175,8 +166,6 @@ footer{margin-top:36px;font-size:.82rem;color:var(--muted)}
       <div class="field"><label for="cEx">Bolsa</label><input id="cEx" type="text" autocomplete="off"></div>
     </div>
     <div class="field"><label for="cManual">Preço do ETF à mão (€), se a chave não funcionar</label><input id="cManual" type="number" inputmode="decimal" step="any"></div>
-    <div class="field"><label for="cG">Chave Gemini (notícias)</label><input id="cG" type="password" autocomplete="off" placeholder="Cria grátis em aistudio.google.com"></div>
-    <div class="field"><label for="cModel">Modelo Gemini</label><input id="cModel" type="text" autocomplete="off"></div>
     <button class="btn" id="btnCfg">Guardar e atualizar</button>
   </details>
 
@@ -193,7 +182,7 @@ footer{margin-top:36px;font-size:.82rem;color:var(--muted)}
     set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
   };
 
-  const cfg = Object.assign({tdKey:'', etfSym:'IWDA', etfEx:'Euronext', manualEtf:'', gKey:'', gModel:'gemini-2.5-flash'}, LS.get('cfg',{}));
+  const cfg = Object.assign({tdKey:'', etfSym:'IWDA', etfEx:'Euronext', manualEtf:''}, LS.get('cfg',{}));
   const plano = Object.assign({valor:200, reserva:'sim', cripto:'5'}, LS.get('plano',{}));
   let compras = LS.get('compras', []);
 
@@ -390,55 +379,8 @@ footer{margin-top:36px;font-size:.82rem;color:var(--muted)}
   };
   function showBuyErr(t){ $('buyErr').textContent = t; $('buyErr').hidden = false; }
 
-  /* ---------- Notícias (Gemini + Pesquisa Google) ---------- */
-  function contexto(){
-    return Object.keys(ASSETS).map(k=>{
-      const m = market[k];
-      if(!m || m.error) return ASSETS[k].nome + ': sem dados.';
-      return ASSETS[k].nome + ': ' + m.last.toFixed(2) + ' ' + m.currency + ', ' + pct(m.dev) + ' face à média de 200 dias, ' + pct(m.dd) + ' face ao máximo de 12 meses (sinal: ' + m.s + ').';
-    }).join('\n');
-  }
-  $('btnNews').onclick = async ()=>{
-    const out = $('news'), src = $('sources'), btn = $('btnNews');
-    src.innerHTML = '';
-    if(!cfg.gKey){ out.textContent = 'Adiciona uma chave gratuita da Gemini na configuração, no fim da página, para ativar a análise de notícias.'; $('cfgBox').open = true; return; }
-    btn.disabled = true; out.textContent = 'A pesquisar notícias…';
-    const prompt = 'Responde em português de Portugal, texto simples sem markdown, frases curtas.\n\n'
-      + 'Sou um investidor em Portugal com pouco risco e estratégia simples: invisto ' + eur.format(Number(plano.valor)||0) + ' por mês, sobretudo num ETF global (' + cfg.etfSym + ') e ' + plano.cripto + '% em Bitcoin/Ethereum na Revolut. Horizonte de 1 a 5 anos ou mais.\n\n'
-      + 'Dados de mercado de hoje:\n' + contexto() + '\n\n'
-      + 'Pesquisa as notícias mais importantes dos últimos 7 dias sobre bolsas mundiais, taxas de juro (BCE e Fed), Bitcoin e Ethereum. Depois diz:\n'
-      + '1) O que aconteceu, em 3 ou 4 pontos.\n'
-      + '2) Se alguma coisa justifica mudar o plano deste mês. Lembra-te de que, para quem investe todos os meses a longo prazo, normalmente a resposta é manter.\n'
-      + '3) Um risco a vigiar nas próximas semanas.\n'
-      + 'Máximo 220 palavras. Termina a lembrar que isto não é aconselhamento financeiro.';
-    try{
-      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(cfg.gModel) + ':generateContent?key=' + encodeURIComponent(cfg.gKey), {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({contents:[{parts:[{text:prompt}]}], tools:[{google_search:{}}]})
-      });
-      const j = await r.json();
-      if(!r.ok){
-        const msg = (j.error && j.error.message) || '';
-        out.textContent = r.status===429 ? 'A Google recusou o pedido por limite de utilização. Detalhe: ' + msg
-          : (r.status===400 || r.status===403 || r.status===404) ? 'A chave ou o modelo Gemini não foram aceites. Verifica a configuração. (' + msg + ')'
-          : 'A Gemini não respondeu (' + r.status + ').';
-        return;
-      }
-      const cand = j.candidates && j.candidates[0];
-      const text = cand && cand.content && cand.content.parts ? cand.content.parts.map(p=>p.text||'').join('') : '';
-      out.textContent = text.replace(/\*\*/g,'').replace(/^#+\s*/gm,'').replace(/^\s*[\*\-]\s+/gm,'• ') || 'Sem resposta. Tenta outra vez.';
-      const chunks = (cand && cand.groundingMetadata && cand.groundingMetadata.groundingChunks) || [];
-      chunks.filter(c=>c.web && c.web.uri).slice(0,6).forEach(c=>{
-        const li = document.createElement('li'); const a = document.createElement('a');
-        a.href = c.web.uri; a.target = '_blank'; a.rel = 'noopener'; a.textContent = c.web.title || 'Fonte';
-        li.appendChild(a); src.appendChild(li);
-      });
-    }catch(e){ out.textContent = 'Sem ligação à Gemini. Verifica a internet e tenta outra vez.'; }
-    finally{ btn.disabled = false; }
-  };
-
   /* ---------- Configuração e eventos ---------- */
-  const cfgMap = {cTd:'tdKey', cSym:'etfSym', cEx:'etfEx', cManual:'manualEtf', cG:'gKey', cModel:'gModel'};
+  const cfgMap = {cTd:'tdKey', cSym:'etfSym', cEx:'etfEx', cManual:'manualEtf'};
   Object.entries(cfgMap).forEach(([id,k])=>{ $(id).value = cfg[k]; });
   $('btnCfg').onclick = ()=>{
     Object.entries(cfgMap).forEach(([id,k])=>{ cfg[k] = $(id).value.trim(); });
