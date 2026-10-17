@@ -419,7 +419,7 @@ footer{margin-top:36px;font-size:.82rem;color:var(--muted)}
       const j = await r.json();
       if(!r.ok){
         const msg = (j.error && j.error.message) || '';
-        out.textContent = r.status===429 ? 'Atingiste o limite gratuito da Gemini por agora. Tenta mais tarde.'
+        out.textContent = r.status===429 ? 'A Google recusou o pedido por limite de utilização. Detalhe: ' + msg
           : (r.status===400 || r.status===403 || r.status===404) ? 'A chave ou o modelo Gemini não foram aceites. Verifica a configuração. (' + msg + ')'
           : 'A Gemini não respondeu (' + r.status + ').';
         return;
