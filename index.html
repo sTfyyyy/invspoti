@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>O meu investimento</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F5F8; --surface:#FFFFFF; --ink:#16233B; --muted:#5B6577; --line:#DCE1EA;
+  --etf:#2F6FDB; --btc:#C98A0C; --eth:#7A5AD6; --reserva:#8A94A6;
+  --up:#13834F; --down:#C2412D;
+  --cheap-bg:#DDF3E8; --cheap-ink:#0E5A36; --dear-bg:#FBE3DE; --dear-ink:#8A2A1A; --ok-bg:#E6EAF1; --ok-ink:#33405A;
+  --warn-bg:#FFF4DC; --warn-ink:#6B4A00; --btn:#16233B; --btn-ink:#FFFFFF;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1524; --surface:#162038; --ink:#E8ECF4; --muted:#9AA6BC; --line:#2A3654;
+    --etf:#6C9BF0; --btc:#F0B840; --eth:#A890F0; --reserva:#7D879B;
+    --up:#45C98A; --down:#F07A64;
+    --cheap-bg:#173D2C; --cheap-ink:#A6E8C6; --dear-bg:#4A221B; --dear-ink:#F8BFB2; --ok-bg:#23304D; --ok-ink:#C9D2E3;
+    --warn-bg:#3A2E10; --warn-ink:#F6DFA4; --btn:#E8ECF4; --btn-ink:#0E1524;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1524; --surface:#162038; --ink:#E8ECF4; --muted:#9AA6BC; --line:#2A3654;
+  --etf:#6C9BF0; --btc:#F0B840; --eth:#A890F0; --reserva:#7D879B;
+  --up:#45C98A; --down:#F07A64;
+  --cheap-bg:#173D2C; --cheap-ink:#A6E8C6; --dear-bg:#4A221B; --dear-ink:#F8BFB2; --ok-bg:#23304D; --ok-ink:#C9D2E3;
+  --warn-bg:#3A2E10; --warn-ink:#F6DFA4; --btn:#E8ECF4; --btn-ink:#0E1524;
+  color-scheme: dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:680px;margin:0 auto;padding:28px 18px 56px}
+h1,h2,h3{font-family:"Bricolage Grotesque","IBM Plex Sans",system-ui,sans-serif;font-weight:700;letter-spacing:-.01em;margin:0}
+h2{font-size:1.3rem;margin-bottom:6px}
+h3{font-size:1.05rem}
+p{margin:0}
+.muted{color:var(--muted)}
+section{margin-top:38px}
+a{color:var(--etf)}
+
+/* Hero: valor da carteira */
+.hero .label{color:var(--muted);font-weight:500}
+.big{font:700 clamp(2.6rem,12vw,4.6rem)/1.05 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.03em;margin:4px 0 6px}
+.gain{font-weight:600}
+.gain.up{color:var(--up)} .gain.down{color:var(--down)}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:.88rem}
+.link{background:none;border:0;color:var(--etf);font:inherit;font-weight:600;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px}
+
+/* Mercado */
+.asset{padding:16px 0;border-top:1px solid var(--line)}
+.asset:last-child{border-bottom:1px solid var(--line)}
+.asset-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.price{font:700 1.2rem/1.3 "Bricolage Grotesque",system-ui,sans-serif}
+.badge{display:inline-block;font-size:.8rem;font-weight:600;border-radius:999px;padding:3px 10px;margin-top:6px}
+.badge.barato{background:var(--cheap-bg);color:var(--cheap-ink)}
+.badge.caro{background:var(--dear-bg);color:var(--dear-ink)}
+.badge.normal{background:var(--ok-bg);color:var(--ok-ink)}
+.facts{font-size:.88rem;color:var(--muted);margin-top:6px}
+.spark{display:block;width:100%;height:56px;margin-top:10px}
+.spark path{fill:none;stroke-width:2;vector-effect:non-scaling-stroke}
+.spark line{stroke:var(--line);stroke-dasharray:4 4;vector-effect:non-scaling-stroke}
+.err{font-size:.9rem;color:var(--warn-ink);background:var(--warn-bg);border-radius:8px;padding:8px 10px;margin-top:8px}
+
+/* Formulários */
+.field{margin-top:14px}
+.field > span, .field > label{display:block;font-size:.875rem;font-weight:600;margin-bottom:6px}
+input[type=text],input[type=number],input[type=date],input[type=password],select{width:100%;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;padding:11px 12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;color:var(--muted);font-family:inherit;font-weight:500;font-size:.9rem;line-height:1.2;padding:9px 6px;border-radius:7px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:10px;background:var(--btn);color:var(--btn-ink);font-family:inherit;font-weight:600;font-size:1rem;line-height:1;padding:14px 18px;cursor:pointer;width:100%;margin-top:14px}
+.btn.secondary{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn:disabled{opacity:.55;cursor:default}
+:focus-visible{outline:2px solid var(--etf);outline-offset:2px}
+
+/* Plano */
+.split{margin-top:12px}
+.split div{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)}
+.split div:last-child{border-bottom:1px solid var(--line)}
+.tip{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--etf);border-radius:8px;padding:12px 14px;margin-top:14px;font-size:.95rem}
+
+/* Compras */
+.buys{list-style:none;padding:0;margin:14px 0 0}
+.buys li{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:.93rem}
+.buys li button{background:none;border:0;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:0 4px}
+.hold{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--line);font-size:.95rem}
+.hold small{color:var(--muted)}
+
+/* Notícias */
+.out{white-space:pre-wrap;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:14px;font-size:.95rem}
+.out:empty{display:none}
+.sources{margin:10px 0 0;padding-left:18px;font-size:.85rem}
+
+details{margin-top:38px;border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface)}
+summary{cursor:pointer;font-weight:600}
+details p{font-size:.9rem;margin-top:10px}
+footer{margin-top:36px;font-size:.82rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+
+  <div class="hero">
+    <p class="label">A tua carteira vale agora</p>
+    <p class="big" id="total">0,00 €</p>
+    <p><span class="muted" id="invested">Ainda não registaste compras.</span> <span class="gain" id="gain"></span></p>
+    <div class="toolbar">
+      <span class="muted" id="updated">A carregar preços…</span>
+      <button class="link" id="refresh">Atualizar</button>
+    </div>
+  </div>
+
+  <section aria-labelledby="t-mkt">
+    <h2 id="t-mkt">Está barato ou caro este mês?</h2>
+    <p class="muted">Compara o preço de hoje com a média dos últimos 200 dias e com o máximo do último ano.</p>
+    <div id="market" style="margin-top:12px"></div>
+  </section>
+
+  <section aria-labelledby="t-plan">
+    <h2 id="t-plan">Plano deste mês</h2>
+    <div class="field"><label for="valor">Quanto vais investir este mês (€)</label>
+      <input id="valor" type="number" inputmode="decimal" min="0" step="10"></div>
+    <div class="field"><span>Já tens a poupança de emergência completa?</span>
+      <div class="seg" data-key="reserva"><button data-v="sim">Sim</button><button data-v="nao">Ainda não</button></div></div>
+    <div class="field"><span>Cripto na Revolut</span>
+      <div class="seg" data-key="cripto"><button data-v="0">Sem cripto</button><button data-v="5">5%</button><button data-v="10">10%</button></div></div>
+    <div class="split" id="split"></div>
+    <p class="tip" id="tip"></p>
+  </section>
+
+  <section aria-labelledby="t-news">
+    <h2 id="t-news">Notícias da semana</h2>
+    <p class="muted">Pesquisa as notícias mais recentes sobre os mercados, Bitcoin e Ethereum e diz se alguma coisa justifica mudar o plano deste mês.</p>
+    <button class="btn" id="btnNews">Analisar notícias</button>
+    <div class="out" id="news" aria-live="polite"></div>
+    <ol class="sources" id="sources"></ol>
+  </section>
+
+  <section aria-labelledby="t-buy">
+    <h2 id="t-buy">Registar compra</h2>
+    <p class="muted">Copia da tua corretora o valor e as unidades que compraste. Fica guardado só neste dispositivo.</p>
+    <div class="grid2">
+      <div class="field"><label for="bAtivo">Ativo</label>
+        <select id="bAtivo"><option value="etf">ETF global</option><option value="btc">Bitcoin</option><option value="eth">Ethereum</option></select></div>
+      <div class="field"><label for="bData">Data</label><input id="bData" type="date"></div>
+      <div class="field"><label for="bValor">Valor investido (€)</label><input id="bValor" type="number" inputmode="decimal" min="0" step="any"></div>
+      <div class="field"><label for="bUn">Unidades</label><input id="bUn" type="number" inputmode="decimal" min="0" step="any" placeholder="Opcional"></div>
+    </div>
+    <p class="note muted" style="font-size:.85rem;margin-top:8px">Se deixares as unidades em branco, a app calcula-as com o preço atual.</p>
+    <button class="btn secondary" id="btnBuy">Registar compra</button>
+    <p class="err" id="buyErr" hidden></p>
+    <div id="holdings" style="margin-top:18px"></div>
+    <ul class="buys" id="buys"></ul>
+  </section>
+
+  <details id="cfgBox">
+    <summary>Configuração (chaves gratuitas)</summary>
+    <p>As chaves ficam guardadas só no teu navegador, nunca no código da página. Bitcoin e Ethereum funcionam sem chave.</p>
+    <div class="field"><label for="cTd">Chave Twelve Data (preço do ETF)</label><input id="cTd" type="password" autocomplete="off" placeholder="Cria grátis em twelvedata.com"></div>
+    <div class="grid2">
+      <div class="field"><label for="cSym">Símbolo do ETF</label><input id="cSym" type="text" autocomplete="off"></div>
+      <div class="field"><label for="cEx">Bolsa</label><input id="cEx" type="text" autocomplete="off"></div>
+    </div>
+    <div class="field"><label for="cManual">Preço do ETF à mão (€), se a chave não funcionar</label><input id="cManual" type="number" inputmode="decimal" step="any"></div>
+    <div class="field"><label for="cG">Chave Gemini (notícias)</label><input id="cG" type="password" autocomplete="off" placeholder="Cria grátis em aistudio.google.com"></div>
+    <div class="field"><label for="cModel">Modelo Gemini</label><input id="cModel" type="text" autocomplete="off"></div>
+    <button class="btn" id="btnCfg">Guardar e atualizar</button>
+  </details>
+
+  <footer>Informação para te ajudar a decidir, não aconselhamento financeiro. Os sinais «barato» e «caro» descrevem o passado recente e não preveem o futuro. Todo o investimento pode perder valor.</footer>
+</main>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const eur = new Intl.NumberFormat('pt-PT',{style:'currency',currency:'EUR'});
+  const pct = x => (x>0?'+':'') + (x*100).toFixed(1).replace('.',',') + '%';
+  const LS = {
+    get(k,d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+    set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  };
+
+  const cfg = Object.assign({tdKey:'', etfSym:'IWDA', etfEx:'Euronext', manualEtf:'', gKey:'', gModel:'gemini-2.5-flash'}, LS.get('cfg',{}));
+  const plano = Object.assign({valor:200, reserva:'sim', cripto:'5'}, LS.get('plano',{}));
+  let compras = LS.get('compras', []);
+
+  const ASSETS = {
+    etf:{nome:'ETF global', cor:'var(--etf)', lim:{cheapDev:-.05, cheapDd:-.15, dearDev:.10, dearDd:-.03}},
+    btc:{nome:'Bitcoin', cor:'var(--btc)', lim:{cheapDev:-.12, cheapDd:-.35, dearDev:.30, dearDd:-.08}},
+    eth:{nome:'Ethereum', cor:'var(--eth)', lim:{cheapDev:-.12, cheapDd:-.40, dearDev:.30, dearDd:-.10}}
+  };
+  const market = {etf:null, btc:null, eth:null};
+
+  /* ---------- Dados ---------- */
+  async function cached(key, ttlMin, fn, force){
+    const c = LS.get('cache:'+key);
+    if(!force && c && Date.now()-c.t < ttlMin*60000) return c.d;
+    const d = await fn();
+    LS.set('cache:'+key, {t:Date.now(), d});
+    return d;
+  }
+  async function getCoin(id){
+    const r = await fetch('https://api.coingecko.com/api/v3/coins/'+id+'/market_chart?vs_currency=eur&days=365');
+    if(!r.ok) throw new Error(r.status===429 ? 'O CoinGecko limitou os pedidos. Tenta daqui a um minuto.' : 'O CoinGecko não respondeu (erro '+r.status+').');
+    const j = await r.json();
+    return {closes:j.prices.map(p=>p[1]), currency:'EUR'};
+  }
+  async function getEtf(){
+    if(!cfg.tdKey) throw new Error('nokey');
+    const u = 'https://api.twelvedata.com/time_series?interval=1day&outputsize=260'
+      + '&symbol=' + encodeURIComponent(cfg.etfSym) + (cfg.etfEx ? '&exchange=' + encodeURIComponent(cfg.etfEx) : '')
+      + '&apikey=' + encodeURIComponent(cfg.tdKey);
+    const r = await fetch(u);
+    const j = await r.json();
+    if(j.status === 'error' || !j.values) throw new Error('Twelve Data: ' + (j.message || 'sem dados para este símbolo.'));
+    return {closes:j.values.map(v=>+v.close).reverse(), currency:(j.meta && j.meta.currency) || 'EUR'};
+  }
+
+  function signal(closes, lim){
+    const n = closes.length, last = closes[n-1];
+    const win = closes.slice(-200);
+    const ma = win.reduce((a,b)=>a+b,0)/win.length;
+    const high = Math.max(...closes.slice(-252));
+    const dev = last/ma - 1, dd = last/high - 1;
+    let s = 'normal';
+    if(dev <= lim.cheapDev || dd <= lim.cheapDd) s = 'barato';
+    else if(dev >= lim.dearDev && dd >= lim.dearDd) s = 'caro';
+    return {last, ma, high, dev, dd, s};
+  }
+
+  async function load(force){
+    $('updated').textContent = 'A carregar preços…';
+    const jobs = [
+      ['btc', ()=>cached('btc', 15, ()=>getCoin('bitcoin'), force)],
+      ['eth', ()=>cached('eth', 15, ()=>getCoin('ethereum'), force)],
+      ['etf', ()=>cached('etf:'+cfg.etfSym+':'+cfg.etfEx, 60, getEtf, force)]
+    ];
+    await Promise.all(jobs.map(async ([k,fn])=>{
+      try{
+        const d = await fn();
+        market[k] = Object.assign({currency:d.currency, closes:d.closes}, signal(d.closes, ASSETS[k].lim));
+      }catch(e){ market[k] = {error:e.message}; }
+    }));
+    $('updated').textContent = 'Preços de ' + new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+    renderAll();
+  }
+
+  function priceOf(k){
+    if(market[k] && market[k].last) return market[k].last;
+    if(k==='etf' && Number(cfg.manualEtf) > 0) return Number(cfg.manualEtf);
+    return null;
+  }
+
+  /* ---------- Mercado ---------- */
+  function spark(closes, ma, color){
+    const w=300, h=56, min=Math.min(...closes), max=Math.max(...closes), span=(max-min)||1;
+    const y = v => (h-4) - (v-min)/span*(h-8);
+    const d = closes.map((v,i)=>(i?'L':'M') + (i/(closes.length-1)*w).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
+    return '<svg class="spark" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" aria-hidden="true">'
+      + '<line x1="0" x2="'+w+'" y1="'+y(ma).toFixed(1)+'" y2="'+y(ma).toFixed(1)+'"></line>'
+      + '<path d="'+d+'" style="stroke:'+color+'"></path></svg>';
+  }
+  const LABEL = {barato:'Mais barato que o habitual', normal:'Preço normal', caro:'Mais caro que o habitual'};
+
+  function renderMarket(){
+    const box = $('market'); box.innerHTML = '';
+    Object.keys(ASSETS).forEach(k=>{
+      const a = ASSETS[k], m = market[k];
+      const el = document.createElement('div'); el.className = 'asset';
+      const head = document.createElement('div'); head.className = 'asset-head';
+      const h = document.createElement('h3'); h.textContent = k==='etf' ? a.nome + ' (' + cfg.etfSym + ')' : a.nome;
+      const p = document.createElement('span'); p.className = 'price';
+      head.append(h,p); el.appendChild(head);
+      if(!m){ p.textContent = '…'; box.appendChild(el); return; }
+      if(m.error){
+        p.textContent = priceOf(k) ? eur.format(priceOf(k)) : 'Sem dados';
+        const e = document.createElement('p'); e.className = 'err';
+        e.textContent = m.error === 'nokey'
+          ? 'Para veres o preço e o sinal do ETF, adiciona uma chave gratuita da Twelve Data na configuração, no fim da página.'
+          : m.error + ' Podes pôr o preço à mão na configuração.';
+        el.appendChild(e); box.appendChild(el); return;
+      }
+      const fmt = new Intl.NumberFormat('pt-PT',{style:'currency',currency:m.currency||'EUR'});
+      p.textContent = fmt.format(m.last);
+      const b = document.createElement('span'); b.className = 'badge ' + m.s; b.textContent = LABEL[m.s];
+      const f = document.createElement('p'); f.className = 'facts';
+      f.textContent = pct(m.dev) + ' face à média de 200 dias. ' + (m.dd > -0.005 ? 'Perto do máximo do último ano.' : pct(m.dd).replace('-','') + ' abaixo do máximo do último ano.');
+      el.append(b,f);
+      el.insertAdjacentHTML('beforeend', spark(m.closes.slice(-252), m.ma, a.cor));
+      box.appendChild(el);
+    });
+  }
+
+  /* ---------- Plano ---------- */
+  function renderPlan(){
+    document.querySelectorAll('.seg').forEach(s=>s.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.v === plano[s.dataset.key]))));
+    const v = Math.max(0, Number(plano.valor)||0);
+    let parts;
+    if(plano.reserva === 'nao') parts = [['Poupança de emergência',50],['ETF global',50]];
+    else { const c = Number(plano.cripto)||0; parts = [['ETF global',100-c]]; if(c) parts.push(['Cripto (Bitcoin/Ethereum)',c]); }
+    $('split').innerHTML = '';
+    parts.forEach(([n,p])=>{
+      const d = document.createElement('div');
+      const a = document.createElement('span'); a.textContent = n + ' (' + p + '%)';
+      const b = document.createElement('strong'); b.textContent = eur.format(v*p/100);
+      d.append(a,b); $('split').appendChild(d);
+    });
+    $('tip').textContent = tipText();
+    LS.set('plano', plano);
+  }
+  function tipText(){
+    if(plano.reserva === 'nao') return 'Prioridade este mês: completar a poupança de emergência. O sinal do mercado não muda isso.';
+    const e = market.etf && market.etf.s;
+    const c = [market.btc, market.eth].filter(m=>m && m.s).map(m=>m.s);
+    let t;
+    if(e === 'barato') t = 'O ETF está abaixo do habitual. Investe o valor normal e, se tiveres dinheiro de folga, este é um bom mês para reforçar um pouco.';
+    else if(e === 'caro') t = 'O ETF está perto dos máximos. Investe o valor normal na mesma: esperar por uma queda costuma correr pior do que investir todos os meses.';
+    else if(e === 'normal') t = 'O ETF está num nível normal. Investe o valor habitual.';
+    else t = 'Investe o valor habitual. Adiciona a chave da Twelve Data para veres o sinal do ETF.';
+    if(Number(plano.cripto) && c.includes('caro')) t += ' A cripto subiu muito: não aumentes a fatia por isso.';
+    else if(Number(plano.cripto) && c.includes('barato')) t += ' A cripto está em queda: mantém a fatia pequena que escolheste, sem a aumentar.';
+    return t;
+  }
+
+  /* ---------- Carteira ---------- */
+  function renderPortfolio(){
+    let inv = 0, val = 0, missing = false;
+    const hold = $('holdings'); hold.innerHTML = '';
+    Object.keys(ASSETS).forEach(k=>{
+      const cs = compras.filter(c=>c.ativo===k); if(!cs.length) return;
+      const u = cs.reduce((a,c)=>a+(Number(c.unidades)||0),0);
+      const i = cs.reduce((a,c)=>a+(Number(c.valor)||0),0);
+      const p = priceOf(k);
+      inv += i;
+      const row = document.createElement('div'); row.className = 'hold';
+      const a = document.createElement('span'); a.textContent = ASSETS[k].nome;
+      const b = document.createElement('strong');
+      const s1 = document.createElement('small'); s1.textContent = u.toLocaleString('pt-PT',{maximumFractionDigits:6}) + ' unidades, investiste ' + eur.format(i);
+      const s2 = document.createElement('small');
+      if(p){ const v = u*p; val += v; b.textContent = eur.format(v); s2.textContent = pct(v/i-1); s2.style.color = v>=i?'var(--up)':'var(--down)'; }
+      else { missing = true; val += i; b.textContent = 'Sem preço'; }
+      row.append(a,b,s1,s2); hold.appendChild(row);
+    });
+    $('total').textContent = eur.format(val);
+    if(inv){
+      $('invested').textContent = 'Investiste ' + eur.format(inv) + '.';
+      const g = val - inv;
+      $('gain').textContent = (g>=0?'Ganho de ':'Perda de ') + eur.format(Math.abs(g)) + ' (' + pct(g/inv) + ')' + (missing?' (aproximado)':'');
+      $('gain').className = 'gain ' + (g>=0?'up':'down');
+    } else { $('invested').textContent = 'Ainda não registaste compras.'; $('gain').textContent = ''; }
+
+    const ul = $('buys'); ul.innerHTML = '';
+    compras.slice().sort((a,b)=>b.data.localeCompare(a.data)).forEach(c=>{
+      const li = document.createElement('li');
+      const a = document.createElement('span'); a.textContent = new Date(c.data).toLocaleDateString('pt-PT') + ', ' + ASSETS[c.ativo].nome;
+      const b = document.createElement('span'); b.textContent = eur.format(c.valor);
+      const x = document.createElement('button'); x.textContent = '×'; x.setAttribute('aria-label','Apagar compra');
+      x.onclick = ()=>{ compras = compras.filter(o=>o.id!==c.id); LS.set('compras', compras); renderPortfolio(); };
+      li.append(a,b,x); ul.appendChild(li);
+    });
+  }
+  $('bData').value = new Date().toISOString().slice(0,10);
+  $('btnBuy').onclick = ()=>{
+    const ativo = $('bAtivo').value, valor = Number($('bValor').value);
+    let un = Number($('bUn').value);
+    $('buyErr').hidden = true;
+    if(!(valor>0)){ showBuyErr('Indica o valor investido.'); return; }
+    if(!(un>0)){
+      const p = priceOf(ativo);
+      if(!p){ showBuyErr('Sem preço atual para calcular as unidades. Escreve-as à mão, como aparecem na corretora.'); return; }
+      un = valor / p;
+    }
+    compras.push({id:Date.now().toString(36), ativo, data:$('bData').value, valor, unidades:un});
+    LS.set('compras', compras);
+    $('bValor').value = ''; $('bUn').value = '';
+    renderPortfolio();
+  };
+  function showBuyErr(t){ $('buyErr').textContent = t; $('buyErr').hidden = false; }
+
+  /* ---------- Notícias (Gemini + Pesquisa Google) ---------- */
+  function contexto(){
+    return Object.keys(ASSETS).map(k=>{
+      const m = market[k];
+      if(!m || m.error) return ASSETS[k].nome + ': sem dados.';
+      return ASSETS[k].nome + ': ' + m.last.toFixed(2) + ' ' + m.currency + ', ' + pct(m.dev) + ' face à média de 200 dias, ' + pct(m.dd) + ' face ao máximo de 12 meses (sinal: ' + m.s + ').';
+    }).join('\n');
+  }
+  $('btnNews').onclick = async ()=>{
+    const out = $('news'), src = $('sources'), btn = $('btnNews');
+    src.innerHTML = '';
+    if(!cfg.gKey){ out.textContent = 'Adiciona uma chave gratuita da Gemini na configuração, no fim da página, para ativar a análise de notícias.'; $('cfgBox').open = true; return; }
+    btn.disabled = true; out.textContent = 'A pesquisar notícias…';
+    const prompt = 'Responde em português de Portugal, texto simples sem markdown, frases curtas.\n\n'
+      + 'Sou um investidor em Portugal com pouco risco e estratégia simples: invisto ' + eur.format(Number(plano.valor)||0) + ' por mês, sobretudo num ETF global (' + cfg.etfSym + ') e ' + plano.cripto + '% em Bitcoin/Ethereum na Revolut. Horizonte de 1 a 5 anos ou mais.\n\n'
+      + 'Dados de mercado de hoje:\n' + contexto() + '\n\n'
+      + 'Pesquisa as notícias mais importantes dos últimos 7 dias sobre bolsas mundiais, taxas de juro (BCE e Fed), Bitcoin e Ethereum. Depois diz:\n'
+      + '1) O que aconteceu, em 3 ou 4 pontos.\n'
+      + '2) Se alguma coisa justifica mudar o plano deste mês. Lembra-te de que, para quem investe todos os meses a longo prazo, normalmente a resposta é manter.\n'
+      + '3) Um risco a vigiar nas próximas semanas.\n'
+      + 'Máximo 220 palavras. Termina a lembrar que isto não é aconselhamento financeiro.';
+    try{
+      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(cfg.gModel) + ':generateContent?key=' + encodeURIComponent(cfg.gKey), {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({contents:[{parts:[{text:prompt}]}], tools:[{google_search:{}}]})
+      });
+      const j = await r.json();
+      if(!r.ok){
+        const msg = (j.error && j.error.message) || '';
+        out.textContent = r.status===429 ? 'Atingiste o limite gratuito da Gemini por agora. Tenta mais tarde.'
+          : (r.status===400 || r.status===403 || r.status===404) ? 'A chave ou o modelo Gemini não foram aceites. Verifica a configuração. (' + msg + ')'
+          : 'A Gemini não respondeu (' + r.status + ').';
+        return;
+      }
+      const cand = j.candidates && j.candidates[0];
+      const text = cand && cand.content && cand.content.parts ? cand.content.parts.map(p=>p.text||'').join('') : '';
+      out.textContent = text.replace(/\*\*/g,'').replace(/^#+\s*/gm,'').replace(/^\s*[\*\-]\s+/gm,'• ') || 'Sem resposta. Tenta outra vez.';
+      const chunks = (cand && cand.groundingMetadata && cand.groundingMetadata.groundingChunks) || [];
+      chunks.filter(c=>c.web && c.web.uri).slice(0,6).forEach(c=>{
+        const li = document.createElement('li'); const a = document.createElement('a');
+        a.href = c.web.uri; a.target = '_blank'; a.rel = 'noopener'; a.textContent = c.web.title || 'Fonte';
+        li.appendChild(a); src.appendChild(li);
+      });
+    }catch(e){ out.textContent = 'Sem ligação à Gemini. Verifica a internet e tenta outra vez.'; }
+    finally{ btn.disabled = false; }
+  };
+
+  /* ---------- Configuração e eventos ---------- */
+  const cfgMap = {cTd:'tdKey', cSym:'etfSym', cEx:'etfEx', cManual:'manualEtf', cG:'gKey', cModel:'gModel'};
+  Object.entries(cfgMap).forEach(([id,k])=>{ $(id).value = cfg[k]; });
+  $('btnCfg').onclick = ()=>{
+    Object.entries(cfgMap).forEach(([id,k])=>{ cfg[k] = $(id).value.trim(); });
+    LS.set('cfg', cfg); $('cfgBox').open = false; load(true);
+  };
+  $('valor').value = plano.valor;
+  $('valor').addEventListener('input', ()=>{ plano.valor = $('valor').value; renderPlan(); });
+  document.querySelectorAll('.seg').forEach(s=>s.addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b) return; plano[s.dataset.key] = b.dataset.v; renderPlan();
+  }));
+  $('refresh').onclick = ()=>load(true);
+
+  function renderAll(){ renderMarket(); renderPlan(); renderPortfolio(); }
+  renderAll();
+  load(false);
+})();
+</script>
+</body>
+</html>
